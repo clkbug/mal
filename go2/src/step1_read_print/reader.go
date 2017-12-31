@@ -1,0 +1,181 @@
+package main
+
+import (
+	"errors"
+	"strconv"
+	"strings"
+)
+
+// Reader is a reader
+type Reader struct {
+	s            []rune
+	pos          int
+	isReachedEND bool
+}
+
+// Token is the type of tokens
+type Token string
+
+func initReader(s string) *Reader {
+	return &Reader{
+		s:            []rune(s),
+		pos:          0,
+		isReachedEND: false,
+	}
+}
+
+// Next returns the token at the current position and increments the position.
+func (r *Reader) next() (Token, error) {
+	t, err := r.peek()
+
+	if err != nil {
+		return t, err
+	}
+
+	if r.isReachedEND {
+		r.pos = len(r.s)
+		return t, nil
+	}
+
+	for isSpace(r.s[r.pos]) {
+		r.pos++
+	}
+
+	r.pos += len(t)
+
+	return t, nil
+}
+
+// peek returns the toekn at the current position.
+func (r *Reader) peek() (Token, error) {
+	if r.isReachedEND {
+		return "", nil
+	} else if r.pos == len(r.s) {
+		r.isReachedEND = true
+		return "", nil
+	}
+	start := r.pos
+
+	for isSpace(r.s[start]) {
+		start++
+		if start == len(r.s) {
+			r.isReachedEND = true
+			return "", nil
+		}
+	}
+
+	switch r.s[start] {
+	case '(', ')', '[', ']', '{', '}', '\'':
+		return runeToToken(r.s[start]), nil
+	case ';':
+		r.isReachedEND = true
+		return "", nil
+	case '~':
+		if r.s[start+1] == '@' {
+			return "~@", nil
+		}
+		return "", errors.New("\"~X\": undefiened token")
+
+	case '"':
+		end := start + 1
+		for r.s[end] != '"' {
+			if r.s[end] == '\\' {
+				end++
+			}
+			end++
+
+			if end >= len(r.s) {
+				return "", errors.New("expected '\"', got EOF")
+			}
+		}
+		return Token(r.s[start : end+1]), nil
+	}
+
+	end := start
+	for !(isSpecial(r.s[end]) || isSpace(r.s[end])) {
+		end++
+		if end == len(r.s) {
+			break
+		}
+	}
+	return Token(r.s[start:end]), nil
+
+}
+
+func runeToString(c rune) string {
+	var t [1]rune
+	t[0] = c
+	return string(t[:])
+}
+
+func runeToToken(c rune) Token {
+	return Token(runeToString(c))
+}
+
+func isSpace(c rune) bool {
+	switch c {
+	case ' ', '\t', '\n', '\r', ',':
+		return true
+	default:
+		return false
+	}
+}
+
+func isSpecial(c rune) bool {
+	return strings.ContainsAny(runeToString(c), "()[]{};\"'`")
+}
+
+func (r *Reader) readForm() (SExp, error) {
+	t, err := r.peek()
+	if err != nil {
+		return t, err
+	}
+	switch t {
+	case "(":
+		return r.readList()
+	default:
+		return r.readAtom()
+	}
+}
+
+func (r *Reader) readList() (SExp, error) {
+	r.next() // "("
+	l := make([]SExp, 0)
+	for {
+		t, err := r.peek()
+		if err != nil {
+			if strings.HasPrefix(err.Error(), "expected '\"'") {
+				return t, errors.New("expected ')', got EOF")
+			}
+		}
+		if t == ")" {
+			r.next()
+			break
+		} else if t == "" {
+			return nil, errors.New("expected ')', got EOF")
+		}
+		h, err := r.readForm()
+		if err != nil {
+			return l, err
+		}
+		l = append(l, h)
+	}
+	return l, nil
+}
+
+func (r *Reader) readAtom() (SExp, error) {
+	t, err := r.next()
+	if err != nil {
+		return t, err
+	}
+	if tmp := []rune(string(t)); strings.ContainsAny(runeToString(tmp[0]), "0123456789") {
+		i, e := strconv.Atoi(string(t))
+		if e != nil {
+			return 0, e
+		}
+		return i, nil
+	} else if tmp[0] == '"' {
+		return StringLiteral(string(tmp[1 : len(tmp)-1])), nil
+	}
+	return Symbol(t), nil
+}

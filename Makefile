@@ -79,7 +79,7 @@ DOCKERIZE =
 #
 
 IMPLS = ada awk bash basic c chuck clojure coffee common-lisp cpp crystal cs d dart \
-	elisp elixir elm erlang es6 factor fantom forth fsharp go groovy gst guile haskell \
+	elisp elixir elm erlang es6 factor fantom forth fsharp go go2 groovy gst guile haskell \
 	haxe hy io java js julia kotlin livescript logo lua make mal matlab miniMAL \
 	nasm nim objc objpascal ocaml perl perl6 php pil plpgsql plsql powershell ps \
 	python r racket rexx rpython ruby rust rust2 scala scheme skew swift swift3 tcl \
@@ -195,6 +195,7 @@ fantom_STEP_TO_PROG =  fantom/lib/fan/$($(1)).pod
 forth_STEP_TO_PROG =   forth/$($(1)).fs
 fsharp_STEP_TO_PROG =  fsharp/$($(1)).exe
 go_STEP_TO_PROG =      go/$($(1))
+go2_STEP_TO_PROG =      go2/$($(1))
 groovy_STEP_TO_PROG =  groovy/$($(1)).groovy
 gst_STEP_TO_PROG =     gst/$($(1)).st
 guile_STEP_TO_PROG =   guile/$($(1)).scm
@@ -233,7 +234,7 @@ rexx_STEP_TO_PROG =    rexx/$($(1)).rexxpp
 rpython_STEP_TO_PROG = rpython/$($(1))
 ruby_STEP_TO_PROG =    ruby/$($(1)).rb
 rust_STEP_TO_PROG =    rust/target/release/$($(1))
-rust2_STEP_TO_PROG =    rust2/bin/$($(1))
+rust2_STEP_TO_PROG =   rust2/target/release/$($(1))
 scala_STEP_TO_PROG =   scala/target/scala-2.11/classes/$($(1)).class
 scheme_STEP_TO_PROG =  $(scheme_STEP_TO_PROG_$(scheme_MODE))
 skew_STEP_TO_PROG =    skew/$($(1)).js
