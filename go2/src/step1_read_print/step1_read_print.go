@@ -17,7 +17,11 @@ func read(scanner *bufio.Scanner) (SExp, error) {
 func eval(e SExp) SExp { return e }
 
 func print(e SExp) {
-	fmt.Println(toString(e))
+	switch e.(type) {
+	case nil:
+	default:
+		fmt.Println(toString(e))
+	}
 }
 
 func main() {
