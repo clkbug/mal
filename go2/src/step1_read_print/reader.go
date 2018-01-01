@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -15,6 +16,21 @@ type Reader struct {
 
 // Token is the type of tokens
 type Token string
+
+const (
+	// QUOTE 'x => x
+	QUOTE = "'"
+	// QUASIQUOTE `x  => (quasiquote x)
+	QUASIQUOTE = "`"
+	// UNQUOTE ~x => (unquote x)
+	UNQUOTE = "~"
+	// SPLICEUNQUOTE ~@x => (splice-unquote x)
+	SPLICEUNQUOTE = "~@"
+	// DEREF @x => (deref x)
+	DEREF = "@"
+	// META ^{a 1} [1 2 3] => (with-meta [1 2 3] {"a" 1})
+	META = "^"
+)
 
 func initReader(s string) *Reader {
 	return &Reader{
@@ -65,7 +81,7 @@ func (r *Reader) peek() (Token, error) {
 	}
 
 	switch r.s[start] {
-	case '(', ')', '[', ']', '{', '}', '\'':
+	case '(', ')', '[', ']', '{', '}', '\'', '`', '@', '^':
 		return runeToToken(r.s[start]), nil
 	case ';':
 		r.isReachedEND = true
@@ -74,7 +90,7 @@ func (r *Reader) peek() (Token, error) {
 		if r.s[start+1] == '@' {
 			return "~@", nil
 		}
-		return "", errors.New("\"~X\": undefiened token")
+		return "~", nil
 
 	case '"':
 		end := start + 1
@@ -122,7 +138,7 @@ func isSpace(c rune) bool {
 }
 
 func isSpecial(c rune) bool {
-	return strings.ContainsAny(runeToString(c), "()[]{};\"'`")
+	return strings.ContainsAny(runeToString(c), "()[]{};\"'`@^")
 }
 
 func (r *Reader) readForm() (SExp, error) {
@@ -132,27 +148,69 @@ func (r *Reader) readForm() (SExp, error) {
 	}
 	switch t {
 	case "(":
-		return r.readList()
+		return r.readSeq(")")
+	case "[":
+		return r.readSeq("]")
+	case "{":
+		return r.readSeq("}")
+	case QUOTE, QUASIQUOTE, UNQUOTE, SPLICEUNQUOTE, DEREF:
+		_, _ = r.next()
+		s, e := r.readForm()
+		if e != nil {
+			return nil, e
+		}
+		qd := make([]SExp, 2)
+		switch t {
+		case QUOTE:
+			qd[0] = Symbol("quote")
+		case QUASIQUOTE:
+			qd[0] = Symbol("quasiquote")
+		case UNQUOTE:
+			qd[0] = Symbol("unquote")
+		case SPLICEUNQUOTE:
+			qd[0] = Symbol("splice-unquote")
+		case DEREF:
+			qd[0] = Symbol("deref")
+		}
+		qd[1] = s
+		return List(qd), nil
+	case META:
+		_, _ = r.next()
+		s, e := r.readSeq("}")
+		if e != nil {
+			return nil, e
+		}
+		qd := make([]SExp, 3)
+		qd[0] = Symbol("with-meta")
+		qd[2] = s
+		s, e = r.readForm()
+		if e != nil {
+			return nil, e
+		}
+		qd[1] = s
+		return List(qd), nil
+	case "":
+		return nil, nil
 	default:
 		return r.readAtom()
 	}
 }
 
-func (r *Reader) readList() (SExp, error) {
-	r.next() // "("
+func (r *Reader) readSeq(right string) (SExp, error) {
+	r.next()
 	l := make([]SExp, 0)
 	for {
 		t, err := r.peek()
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "expected '\"'") {
-				return t, errors.New("expected ')', got EOF")
+				return t, fmt.Errorf("expected '%s', got EOF", right)
 			}
 		}
-		if t == ")" {
+		if t == Token(right) {
 			r.next()
 			break
 		} else if t == "" {
-			return nil, errors.New("expected ')', got EOF")
+			return nil, fmt.Errorf("expected '%s', got EOF", right)
 		}
 		h, err := r.readForm()
 		if err != nil {
@@ -160,7 +218,16 @@ func (r *Reader) readList() (SExp, error) {
 		}
 		l = append(l, h)
 	}
-	return l, nil
+	switch right {
+	case ")":
+		return List(l), nil
+	case "]":
+		return Vector(l), nil
+	case "}":
+		return HashMap(l), nil
+	default:
+		return l, errors.New("Invalid 'right' in reader.readSeq")
+	}
 }
 
 func (r *Reader) readAtom() (SExp, error) {
