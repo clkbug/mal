@@ -86,6 +86,11 @@ func evalAst(env Env, exp SExp) (SExp, error) {
 		}
 		car := list[0]
 		cdr := list[1:]
+		f, err := evalAst(env, car)
+		if err != nil {
+			return f, err
+		}
+		fun := f.(func(List) SExp)
 		args := make([]SExp, len(cdr))
 		for i, v := range cdr {
 			var err error
@@ -94,11 +99,6 @@ func evalAst(env Env, exp SExp) (SExp, error) {
 				return nil, err
 			}
 		}
-		f, err := evalAst(env, car)
-		if err != nil {
-			return f, err
-		}
-		fun := f.(func(List) SExp)
 		return fun(args), nil
 	case Vector:
 		vect := exp.(Vector)
