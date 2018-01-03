@@ -2,8 +2,8 @@ BINS = step0_repl \
   step1_read_print \
   step2_eval \
   step3_env \
-  #step4_if_fn_do \
-  step5_tco \
+  step4_if_fn_do \
+  #step5_tco \
   step6_file \
   step7_quote \
   step8_macros \
@@ -22,7 +22,7 @@ mal: $(word $(words $(BINS)),$(BINS))
 
 define dep_template
 $(1): $(shell ls src/$(1)/*.go)
-	cd src/$(1);	echo $(shell pwd);	go build;	mv $(1) ../../
+	cd src/$(1) && go build && mv $(1) ../../
 endef
 
 $(foreach b,$(BINS),$(eval $(call dep_template,$(b))))
