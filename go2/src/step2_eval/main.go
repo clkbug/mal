@@ -15,15 +15,14 @@ func read(scanner *bufio.Scanner) (SExp, error) {
 	return r.readForm()
 }
 
-func eval(e SExp) SExp { return e }
+func eval(e SExp) SExp { return e.eval(replEnv) }
 
 func print(e SExp) {
-	switch e.(type) {
-	case nil:
-		fmt.Println("hoge")
-
-	}
 	fmt.Println(e.toString())
+}
+
+func init() {
+	initREPLEnv()
 }
 
 func main() {

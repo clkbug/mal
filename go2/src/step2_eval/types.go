@@ -38,8 +38,8 @@ func (l List) toString() string {
 
 func (l List) eval(env Env) SExp {
 	ret := make(List, len(l))
-	for _, elem := range l {
-		ret = append(ret, elem.eval(env))
+	for i, elem := range l {
+		ret[i] = elem.eval(env)
 	}
 	return ret
 }
@@ -53,8 +53,8 @@ func (v Vector) toString() string {
 
 func (v Vector) eval(env Env) SExp {
 	ret := make(Vector, len(v))
-	for _, elem := range v {
-		ret = append(ret, elem.eval(env))
+	for i, elem := range v {
+		ret[i] = elem.eval(env)
 	}
 	return ret
 }
@@ -68,16 +68,22 @@ func (hm HashMap) toString() string {
 
 func (hm HashMap) eval(env Env) SExp {
 	ret := make(HashMap, len(hm))
-	for _, elem := range hm {
-		ret = append(ret, elem.eval(env))
+	for i, elem := range hm {
+		ret[i] = elem.eval(env)
 	}
 	return ret
 }
 
+// Func : function
+type Func func(args List) SExp
+
+func (f Func) toString() string  { return "*Func*" }
+func (f Func) eval(env Env) SExp { return f }
+
 // SExp : a S SExpression
 type SExp interface {
 	toString() string
-	eval(e Env) SExp
+	eval(Env) SExp
 }
 
 func toStringSexpSlice(ls string, sexps []SExp, rs string) string {
