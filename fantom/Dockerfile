@@ -1,4 +1,4 @@
-FROM ubuntu:17.10
+FROM ubuntu:bionic
 MAINTAINER Joel Martin <github@martintribe.org>
 
 ##########################################################
@@ -21,33 +21,17 @@ WORKDIR /mal
 # Specific implementation requirements
 ##########################################################
 
-#
-# Clojure (Java and lein)
-#
+# Java and Unzip
+RUN apt-get -y install openjdk-8-jdk unzip
 
-RUN apt-get -y install openjdk-8-jdk
+# Fantom and JLine
+RUN cd /tmp && curl -sfLO https://bitbucket.org/fantom/fan-1.0/downloads/fantom-1.0.70.zip \
+    && unzip -q fantom-1.0.70.zip \
+    && rm fantom-1.0.70.zip \
+    && mv fantom-1.0.70 /opt/fantom \
+    && cd /opt/fantom \
+    && bash adm/unixsetup \
+    && curl -sfL -o /opt/fantom/lib/java/jline.jar https://repo1.maven.org/maven2/jline/jline/2.14.6/jline-2.14.6.jar
 
-ADD https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein \
-    /usr/local/bin/lein
-RUN chmod 0755 /usr/local/bin/lein
-ENV LEIN_HOME /mal/.lein
-ENV LEIN_JVM_OPTS -Duser.home=/mal
-
-#
-# ClojureScript (Node and Lumo)
-#
-
-# For building node modules
-RUN apt-get -y install g++
-
-# Add nodesource apt repo config for 8.X
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-
-# Install nodejs.
-RUN apt-get -y install nodejs
-
-## Install ffi and lumo-cljs modules globally
-#RUN npm install -g ffi lumo-cljs
-
-ENV HOME=/mal
-
+ENV PATH /opt/fantom/bin:$PATH
+ENV HOME /mal

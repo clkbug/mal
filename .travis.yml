@@ -27,6 +27,7 @@ matrix:
     - {env: IMPL=erlang NO_PERF=1, services: [docker]} # perf runs out of memory
     - {env: IMPL=es6,       services: [docker]}
     - {env: IMPL=factor,    services: [docker]}
+    - {env: IMPL=fantom,    services: [docker]}
     - {env: IMPL=forth,     services: [docker]}
     - {env: IMPL=fsharp,    services: [docker]}
     - {env: IMPL=go,        services: [docker]}
@@ -51,6 +52,7 @@ matrix:
     - {env: IMPL=mal BUILD_IMPL=js NO_PERF=1, services: [docker]}
     - {env: IMPL=matlab, services: [docker]} # Uses Octave
     - {env: IMPL=miniMAL,   services: [docker]}
+    - {env: IMPL=nasm,      services: [docker]}
     - {env: IMPL=nim,       services: [docker]}
     - {env: IMPL=objpascal, services: [docker]}
     - {env: IMPL=objc NO_DOCKER=1, os: osx, osx_image: xcode7}
@@ -81,7 +83,7 @@ matrix:
     - {env: IMPL=scheme scheme_MODE=cyclone,     services: [docker]}
 #    - {env: IMPL=scheme scheme_MODE=foment,      services: [docker]}
     - {env: IMPL=skew,      services: [docker]}
-    - {env: IMPL=swift NO_DOCKER=1, os: osx, osx_image: xcode7}
+    - {env: IMPL=swift NO_DOCKER=1, os: osx, osx_image: xcode7.3}
     - {env: IMPL=swift3,    services: [docker]}
     - {env: IMPL=swift3 NO_DOCKER=1, os: osx, osx_image: xcode8}
     - {env: IMPL=tcl,       services: [docker]}

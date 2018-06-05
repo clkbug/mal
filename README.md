@@ -6,7 +6,7 @@
 
 Mal is a Clojure inspired Lisp interpreter.
 
-Mal is implemented in 71 languages:
+Mal is implemented in 73 languages:
 
 * Ada
 * GNU awk
@@ -29,6 +29,7 @@ Mal is implemented in 71 languages:
 * ES6 (ECMAScript 6 / ECMAScript 2015)
 * F#
 * Factor
+* Fantom
 * Forth
 * Go
 * Groovy
@@ -49,6 +50,7 @@ Mal is implemented in 71 languages:
 * mal itself
 * Matlab (GNU Octave and MATLAB)
 * [miniMAL](https://github.com/kanaka/miniMAL)
+* NASM
 * Nim
 * Object Pascal
 * Objective C
@@ -418,6 +420,18 @@ cd factor
 FACTOR_ROOTS=. factor -run=stepX_YYY
 ```
 
+### Fantom
+
+*The Fantom implementation was created by [Dov Murik](https://github.com/dubek)*
+
+The Fantom implementation of mal has been tested with Fantom 1.0.70.
+
+```
+cd fantom
+make lib/fan/stepX_YYY.pod
+STEP=stepX_YYY ./run
+```
+
 ### Forth
 
 *The Forth implementation was created by [Chris Houser (chouser)](https://github.com/chouser)*
@@ -615,6 +629,19 @@ IMPL_STEPA_CMD ../mal/stepX_YYY.mal
 ```
 cd make
 make -f stepX_YYY.mk
+```
+
+### NASM
+
+*The NASM implementation was created by [Ben Dudson](https://github.com/bendudson)*
+
+The NASM implementation of mal is written for x86-64 Linux, and has been tested
+with Linux 3.16.0-4-amd64 and NASM version 2.11.05.
+
+```
+cd nasm
+make
+./stepX_YYY
 ```
 
 ### Nim 0.17.0

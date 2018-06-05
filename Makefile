@@ -79,9 +79,9 @@ DOCKERIZE =
 #
 
 IMPLS = ada awk bash basic c chuck clojure coffee common-lisp cpp crystal cs d dart \
-	elisp elixir elm erlang es6 factor forth fsharp go go2 groovy gst guile haskell \
+	elisp elixir elm erlang es6 factor fantom forth fsharp go go2 groovy gst guile haskell \
 	haxe hy io java js julia kotlin livescript logo lua make mal matlab miniMAL \
-	nim objc objpascal ocaml perl perl6 php pil plpgsql plsql powershell ps \
+	nasm nim objc objpascal ocaml perl perl6 php pil plpgsql plsql powershell ps \
 	python r racket rexx rpython ruby rust rust2 scala scheme skew swift swift3 tcl \
 	ts vb vhdl vimscript yorick
 
@@ -191,6 +191,7 @@ elm_STEP_TO_PROG =     elm/$($(1)).js
 erlang_STEP_TO_PROG =  erlang/$($(1))
 es6_STEP_TO_PROG =     es6/$($(1)).mjs
 factor_STEP_TO_PROG =  factor/$($(1))/$($(1)).factor
+fantom_STEP_TO_PROG =  fantom/lib/fan/$($(1)).pod
 forth_STEP_TO_PROG =   forth/$($(1)).fs
 fsharp_STEP_TO_PROG =  fsharp/$($(1)).exe
 go_STEP_TO_PROG =      go/$($(1))
@@ -213,6 +214,7 @@ make_STEP_TO_PROG =    make/$($(1)).mk
 mal_STEP_TO_PROG =     mal/$($(1)).mal
 matlab_STEP_TO_PROG =  matlab/$($(1)).m
 miniMAL_STEP_TO_PROG = miniMAL/$($(1)).json
+nasm_STEP_TO_PROG =    nasm/$($(1))
 nim_STEP_TO_PROG =     nim/$($(1))
 objc_STEP_TO_PROG =    objc/$($(1))
 objpascal_STEP_TO_PROG = objpascal/$($(1))
