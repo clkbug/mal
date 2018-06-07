@@ -1,12 +1,21 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+// SExp : a S SExpression
+type SExp interface {
+	toString() string
+	eval(Env) (SExp, error)
+}
 
 // Undefined : Undefined symbol. When an error occurred, reader returns UNDEF and err
 type Undefined int
 
-func (u Undefined) toString() string  { return "*Undefined*" }
-func (u Undefined) eval(env Env) SExp { return u }
+func (u Undefined) toString() string           { return "*Undefined*" }
+func (u Undefined) eval(env Env) (SExp, error) { return u, nil }
 
 // UNDEF : Undef
 const UNDEF = Undefined(0)
@@ -14,32 +23,32 @@ const UNDEF = Undefined(0)
 // Int : integer
 type Int int
 
-func (i Int) toString() string  { return fmt.Sprint(i) }
-func (i Int) eval(env Env) SExp { return i }
+func (i Int) toString() string           { return fmt.Sprint(i) }
+func (i Int) eval(env Env) (SExp, error) { return i, nil }
 
 // Symbol : Symbol
 type Symbol string
 
 func (s Symbol) toString() string { return string(s) }
-func (s Symbol) eval(env Env) SExp {
+func (s Symbol) eval(env Env) (SExp, error) {
 	v, ok := env.get(s)
 	if ok {
-		return v
+		return v, nil
 	}
-	return UNDEF
+	return UNDEF, errors.New("can't find Symbol " + s.toString())
 }
 
 // Keyword : Keyword
 type Keyword string
 
-func (k Keyword) toString() string  { return ":" + string(k) }
-func (k Keyword) eval(env Env) SExp { return k }
+func (k Keyword) toString() string           { return ":" + string(k) }
+func (k Keyword) eval(env Env) (SExp, error) { return k, nil }
 
 // StringLiteral : should be print with '"'
 type StringLiteral string
 
-func (s StringLiteral) toString() string  { return fmt.Sprintf("\"%s\"", s) }
-func (s StringLiteral) eval(env Env) SExp { return s }
+func (s StringLiteral) toString() string           { return fmt.Sprintf("\"%s\"", s) }
+func (s StringLiteral) eval(env Env) (SExp, error) { return s, nil }
 
 // List : e.g. (1 2 3)
 type List []SExp
@@ -48,38 +57,40 @@ func (l List) toString() string {
 	return toStringSexpSlice("(", []SExp(l), ")")
 }
 
-func (l List) eval(env Env) SExp {
+func (l List) eval(env Env) (SExp, error) {
 	if len(l) == 0 {
-		return l
+		return l, nil
 	} else if len(l) > 1 {
-		switch c := l[0].eval(env); c.(type) {
+		if v, ok := isSpecialForm(l[0]); ok {
+			switch v {
+			case IF:
+			case COND:
+			case OR:
+			case DEF:
+				return evalDef(env, l[1:])
+			case DEFMACRO:
+			case LET:
+				return evalLet(env, l[1:])
+			default:
+				panic("can't reach here... eval special form")
+			}
+		}
+		switch c, err := l[0].eval(env); c.(type) {
 		case Closure: // apply
 			args := make(List, len(l)-1)
 			for i, elem := range l[1:] {
-				args[i] = elem.eval(env)
+				args[i], err = elem.eval(env)
+				if err != nil {
+					return UNDEF, err
+				}
 			}
 
-			return c.(Closure).apply(args)
+			return c.(Closure).apply(args), nil
 		default:
 			println("error: can't apply")
 		}
 	}
-	return UNDEF
-}
-
-var specialFormMap = map[string]struct{}{
-	"if": struct{}{}, "cond": struct{}{}, "or": struct{}{},
-	"def!": struct{}{}, "defmacro!": struct{}{}, "let*": struct{}{},
-}
-
-func isSpecialForm(s SExp) bool {
-	switch s.(type) {
-	case Symbol:
-		_, ok := specialFormMap[string(s.(Symbol))]
-		return ok
-	default:
-		return false
-	}
+	return UNDEF, errors.New("..........")
 }
 
 // Vector : e.g. [1 2 3]
@@ -89,12 +100,20 @@ func (v Vector) toString() string {
 	return toStringSexpSlice("[", []SExp(v), "]")
 }
 
-func (v Vector) eval(env Env) SExp {
+func (v Vector) eval(env Env) (SExp, error) {
 	ret := make(Vector, len(v))
 	for i, elem := range v {
-		ret[i] = elem.eval(env)
+		var err error
+		ret[i], err = elem.eval(env)
+		if err != nil {
+			return UNDEF, err
+		}
 	}
-	return ret
+	return ret, nil
+}
+
+func (v Vector) toList() List {
+	return List(v)
 }
 
 // HashMap : {x 1, y 2}
@@ -104,12 +123,16 @@ func (hm HashMap) toString() string {
 	return toStringSexpSlice("{", []SExp(hm), "}")
 }
 
-func (hm HashMap) eval(env Env) SExp {
+func (hm HashMap) eval(env Env) (SExp, error) {
 	ret := make(HashMap, len(hm))
 	for i, elem := range hm {
-		ret[i] = elem.eval(env)
+		var err error
+		ret[i], err = elem.eval(env)
+		if err != nil {
+			return UNDEF, err
+		}
 	}
-	return ret
+	return ret, nil
 }
 
 // Func : function
@@ -121,16 +144,10 @@ type Closure struct {
 	fun Func
 }
 
-func (c Closure) toString() string  { return "*Closure*" }
-func (c Closure) eval(env Env) SExp { return c }
+func (c Closure) toString() string           { return "*Closure*" }
+func (c Closure) eval(env Env) (SExp, error) { return c, nil }
 
 func (c Closure) apply(args List) SExp { return c.fun(c.env, args) }
-
-// SExp : a S SExpression
-type SExp interface {
-	toString() string
-	eval(Env) SExp
-}
 
 func toStringSexpSlice(ls string, sexps []SExp, rs string) string {
 	t := make([]byte, 0, 10)

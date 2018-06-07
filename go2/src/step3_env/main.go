@@ -15,14 +15,17 @@ func read(scanner *bufio.Scanner) (SExp, error) {
 	return r.readForm()
 }
 
-func eval(e SExp) SExp { return e.eval(replEnv) }
+func eval(e SExp) SExp {
+	exp, err := e.eval(replEnv)
+	if err != nil {
+		println(err.Error())
+		return UNDEF
+	}
+	return exp
+}
 
 func print(e SExp) {
 	fmt.Println(e.toString())
-}
-
-func init() {
-	initREPLEnv()
 }
 
 func main() {
