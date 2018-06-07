@@ -37,6 +37,13 @@ func (l List) toString() string {
 }
 
 func (l List) eval(env Env) SExp {
+	if len(l) > 1 {
+		switch l[0].(type) {
+		case Closure: // apply
+
+		default:
+		}
+	}
 	ret := make(List, len(l))
 	for i, elem := range l {
 		ret[i] = elem.eval(env)
@@ -77,8 +84,14 @@ func (hm HashMap) eval(env Env) SExp {
 // Func : function
 type Func func(args List) SExp
 
-func (f Func) toString() string  { return "*Func*" }
-func (f Func) eval(env Env) SExp { return f }
+// Closure : function + environment
+type Closure struct {
+	env Env
+	fun Func
+}
+
+func (c Closure) toString() string  { return "*Closure*" }
+func (c Closure) eval(env Env) SExp { return c }
 
 // SExp : a S SExpression
 type SExp interface {
