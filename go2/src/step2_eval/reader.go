@@ -235,14 +235,16 @@ func (r *Reader) readAtom() (SExp, error) {
 	if err != nil {
 		return UNDEF, err
 	}
-	if tmp := []rune(string(t)); strings.ContainsAny(runeToString(tmp[0]), "0123456789") {
+	if tmp := []rune(string(t)); strings.ContainsAny(runeToString(tmp[0]), "-0123456789") {
 		i, e := strconv.Atoi(string(t))
 		if e != nil {
-			return UNDEF, e
+			return Symbol(t), nil // when ParseInt fails, this works
 		}
 		return Int(i), nil
 	} else if tmp[0] == '"' {
 		return StringLiteral(string(tmp[1 : len(tmp)-1])), nil
+	} else if tmp[0] == ':' {
+		return Keyword(tmp[1:]), nil
 	}
 	return Symbol(t), nil
 }

@@ -18,7 +18,7 @@ func initREPLEnv() {
 	replEnv = make(map[Symbol]SExp)
 	plus := Closure{
 		env: nil,
-		fun: Func(func(args List) SExp {
+		fun: Func(func(_ Env, args List) SExp {
 			s := 0
 			for _, v := range args {
 				switch v.(type) {
@@ -33,7 +33,7 @@ func initREPLEnv() {
 	}
 	minus := Closure{
 		env: nil,
-		fun: Func(func(args List) SExp {
+		fun: Func(func(_ Env, args List) SExp {
 			s := int(args[0].(Int))
 			for _, v := range args[1:] {
 				switch v.(type) {
@@ -48,7 +48,7 @@ func initREPLEnv() {
 	}
 	times := Closure{
 		env: nil,
-		fun: Func(func(args List) SExp {
+		fun: Func(func(_ Env, args List) SExp {
 			s := 1
 			for _, v := range args {
 				switch v.(type) {
@@ -63,7 +63,7 @@ func initREPLEnv() {
 	}
 	div := Closure{
 		env: nil,
-		fun: Func(func(args List) SExp {
+		fun: Func(func(_ Env, args List) SExp {
 			s := int(args[0].(Int))
 			for _, v := range args[1:] {
 				switch v.(type) {

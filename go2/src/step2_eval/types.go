@@ -20,8 +20,20 @@ func (i Int) eval(env Env) SExp { return i }
 // Symbol : Symbol
 type Symbol string
 
-func (s Symbol) toString() string  { return string(s) }
-func (s Symbol) eval(env Env) SExp { return s }
+func (s Symbol) toString() string { return string(s) }
+func (s Symbol) eval(env Env) SExp {
+	v, ok := env.get(s)
+	if ok {
+		return v
+	}
+	return UNDEF
+}
+
+// Keyword : Keyword
+type Keyword string
+
+func (k Keyword) toString() string  { return ":" + string(k) }
+func (k Keyword) eval(env Env) SExp { return k }
 
 // StringLiteral : should be print with '"'
 type StringLiteral string
@@ -37,18 +49,22 @@ func (l List) toString() string {
 }
 
 func (l List) eval(env Env) SExp {
-	if len(l) > 1 {
-		switch l[0].(type) {
+	if len(l) == 0 {
+		return l
+	} else if len(l) > 1 {
+		switch c := l[0].eval(env); c.(type) {
 		case Closure: // apply
+			args := make(List, len(l)-1)
+			for i, elem := range l[1:] {
+				args[i] = elem.eval(env)
+			}
 
+			return c.(Closure).apply(args)
 		default:
+			println("error: can't apply")
 		}
 	}
-	ret := make(List, len(l))
-	for i, elem := range l {
-		ret[i] = elem.eval(env)
-	}
-	return ret
+	return UNDEF
 }
 
 // Vector : e.g. [1 2 3]
@@ -82,7 +98,7 @@ func (hm HashMap) eval(env Env) SExp {
 }
 
 // Func : function
-type Func func(args List) SExp
+type Func func(env Env, args List) SExp
 
 // Closure : function + environment
 type Closure struct {
@@ -92,6 +108,8 @@ type Closure struct {
 
 func (c Closure) toString() string  { return "*Closure*" }
 func (c Closure) eval(env Env) SExp { return c }
+
+func (c Closure) apply(args List) SExp { return c.fun(c.env, args) }
 
 // SExp : a S SExpression
 type SExp interface {
