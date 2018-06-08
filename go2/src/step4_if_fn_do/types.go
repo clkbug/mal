@@ -75,7 +75,7 @@ func (l List) toString() string {
 func (l List) eval(env Env) (SExp, error) {
 	if len(l) == 0 {
 		return l, nil
-	} else if len(l) > 1 {
+	} else {
 		if v, ok := isSpecialForm(l[0]); ok {
 			switch v {
 			case IF:
@@ -101,7 +101,7 @@ func (l List) eval(env Env) (SExp, error) {
 				}
 			}
 
-			return c.(Closure).apply(args), nil
+			return c.(Closure).apply(args)
 		default:
 			println("error: can't apply")
 		}
@@ -152,7 +152,7 @@ func (hm HashMap) eval(env Env) (SExp, error) {
 }
 
 // Func : function
-type Func func(env Env, args List) SExp
+type Func func(env Env, args List) (SExp, error)
 
 // Closure : function + environment
 type Closure struct {
@@ -163,7 +163,9 @@ type Closure struct {
 func (c Closure) toString() string           { return "*Closure*" }
 func (c Closure) eval(env Env) (SExp, error) { return c, nil }
 
-func (c Closure) apply(args List) SExp { return c.fun(c.env, args) }
+func (c Closure) apply(args List) (SExp, error) {
+	return c.fun(c.env, args)
+}
 
 func toStringSexpSlice(ls string, sexps []SExp, rs string) string {
 	t := make([]byte, 0, 10)
