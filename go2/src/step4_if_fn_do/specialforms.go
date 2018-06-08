@@ -8,6 +8,7 @@ const OR = "or"
 const DEF = "def!"
 const DEFMACRO = "defmacro!"
 const LET = "let*"
+const FN = "fn*"
 
 var specialFormMap = map[string]struct{}{
 	IF: struct{}{}, COND: struct{}{}, OR: struct{}{},
@@ -102,4 +103,8 @@ func evalLetBindOne(env Env, l List) error {
 	default:
 		return errors.New("Syntax error: let*'s bind")
 	}
+}
+
+func evalFn(env Env, l List) (SExp, error) {
+	return UNDEF, errors.New("unimplemented")
 }

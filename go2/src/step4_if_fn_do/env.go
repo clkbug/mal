@@ -31,6 +31,19 @@ func makeNewEnv(e Env) Env {
 	}
 }
 
+func (e Env) copy() Env {
+	var ne Env
+	if e.nextEnv == nil {
+		ne.env = make(envInternal)
+	} else {
+		ne = e.nextEnv.copy()
+	}
+	for k, v := range e.env {
+		ne.env[k] = v.copy()
+	}
+	return ne
+}
+
 var replEnv Env
 
 func init() {
@@ -38,9 +51,8 @@ func init() {
 		env:     makeEnvInternal(),
 		nextEnv: nil,
 	}
-	plus := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	plus := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			s := 0
 			for _, v := range args {
 				switch v.(type) {
@@ -51,11 +63,10 @@ func init() {
 				}
 			}
 			return Int(s), nil
-		}),
+		},
 	}
-	minus := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	minus := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			s := int(args[0].(Int))
 			for _, v := range args[1:] {
 				switch v.(type) {
@@ -66,11 +77,10 @@ func init() {
 				}
 			}
 			return Int(s), nil
-		}),
+		},
 	}
-	times := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	times := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			s := 1
 			for _, v := range args {
 				switch v.(type) {
@@ -81,11 +91,10 @@ func init() {
 				}
 			}
 			return Int(s), nil
-		}),
+		},
 	}
-	div := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	div := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			s := int(args[0].(Int))
 			for _, v := range args[1:] {
 				switch v.(type) {
@@ -96,28 +105,25 @@ func init() {
 				}
 			}
 			return Int(s), nil
-		}),
+		},
 	}
-	list := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	list := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			return args, nil
-		}),
+		},
 	}
-	listq := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	listq := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			switch args[0].(type) {
 			case List:
 				return Bool(true), nil
 			default:
 				return Bool(false), nil
 			}
-		}),
+		},
 	}
-	emptyq := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	emptyq := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			switch args[0].(type) {
 			case List:
 				return Bool(len(args[0].(List)) == 0), nil
@@ -126,11 +132,10 @@ func init() {
 			default:
 				return Bool(false), nil
 			}
-		}),
+		},
 	}
-	count := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	count := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			switch args[0].(type) {
 			case List:
 				return Int(len(args[0].(List))), nil
@@ -139,11 +144,10 @@ func init() {
 			default:
 				return Int(0), nil
 			}
-		}),
+		},
 	}
-	not := Closure{
-		env: replEnv,
-		fun: Func(func(_ Env, args List) (SExp, error) {
+	not := CoreFunc{
+		fun: func(args List) (SExp, error) {
 			b := true
 			switch args[0].(type) {
 			case NilType:
@@ -155,17 +159,12 @@ func init() {
 				b = len(list) == 0
 			}
 			return Bool(!b), nil
-		}),
+		},
 	}
-	do := Closure{
-		env: replEnv,
-		fun: Func(func(env Env, args List) (SExp, error) {
-			var retVal SExp
-			for _, v := range args {
-				retVal, _ = v.eval(env)
-			}
-			return retVal, nil
-		}),
+	do := CoreFunc{
+		fun: func(args List) (SExp, error) {
+			return args[len(args)-1], nil
+		},
 	}
 	replEnv.set(Symbol("+"), plus)
 	replEnv.set(Symbol("-"), minus)
