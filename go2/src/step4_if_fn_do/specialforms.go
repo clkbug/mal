@@ -13,6 +13,7 @@ const FN = "fn*"
 var specialFormMap = map[string]struct{}{
 	IF: struct{}{}, COND: struct{}{}, OR: struct{}{},
 	DEF: struct{}{}, DEFMACRO: struct{}{}, LET: struct{}{},
+	FN: struct{}{},
 }
 
 func isSpecialForm(s SExp) (string, bool) {
@@ -32,9 +33,6 @@ func evalIf(env Env, l List) (SExp, error) {
 		cond = false
 	case Bool:
 		cond = bool(l[0].(Bool))
-	case List:
-		list := l[0].(List)
-		cond = len(list) == 0
 	}
 	if cond {
 		return l[1].eval(env)
@@ -106,5 +104,27 @@ func evalLetBindOne(env Env, l List) error {
 }
 
 func evalFn(env Env, l List) (SExp, error) {
-	return UNDEF, errors.New("unimplemented")
+	var params []SExp
+	switch l[0].(type) {
+	case List:
+		params = l[0].(List)
+	case Vector:
+		params = l[0].(Vector)
+	default:
+		return UNDEF, errors.New("unimplemented")
+	}
+	cparams := make([]Symbol, len(params))
+	for i, p := range params {
+		switch p.(type) {
+		case Symbol:
+			cparams[i] = p.(Symbol)
+		default:
+			return UNDEF, errors.New("fn* param should be SYMBOL ... but got " + p.toString())
+		}
+	}
+	return Closure{
+		env:    env.copy(),
+		params: cparams,
+		body:   l[1],
+	}, nil
 }

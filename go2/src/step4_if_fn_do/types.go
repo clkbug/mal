@@ -110,8 +110,16 @@ func (l List) eval(env Env) (SExp, error) {
 					return UNDEF, err
 				}
 			}
-
 			return c.(CoreFunc).apply(args)
+		case Closure:
+			args := make(List, len(l)-1)
+			for i, elem := range l[1:] {
+				args[i], err = elem.eval(env)
+				if err != nil {
+					return UNDEF, err
+				}
+			}
+			return c.(Closure).apply(args)
 		default:
 			println("error: can't apply")
 		}
@@ -185,16 +193,38 @@ func (hm HashMap) copy() SExp {
 	return t
 }
 
-// CoreFunc : function + environment
-type CoreFunc struct {
-	fun func(args List) (SExp, error)
-}
+// CoreFunc : function
+type CoreFunc func(args List) (SExp, error)
 
 func (c CoreFunc) toString() string           { return "*CoreFunc*" }
 func (c CoreFunc) eval(env Env) (SExp, error) { return c, nil }
 func (c CoreFunc) copy() SExp                 { return c }
 
-func (c CoreFunc) apply(args List) (SExp, error) { return c.fun(args) }
+func (c CoreFunc) apply(args List) (SExp, error) { return c(args) }
+
+// Closure : environment + arg List + body
+type Closure struct {
+	env    Env
+	params []Symbol
+	body   SExp
+}
+
+func (c Closure) toString() string           { return "*Closure*" }
+func (c Closure) eval(env Env) (SExp, error) { return c, nil }
+func (c Closure) copy() SExp {
+	return Closure{
+		env:    c.env.copy(),
+		params: c.params,
+		body:   c.body,
+	}
+}
+func (c Closure) apply(args List) (SExp, error) {
+	newEnv := c.env.copy()
+	for i, p := range c.params {
+		newEnv.set(p, args[i])
+	}
+	return c.body.eval(newEnv)
+}
 
 func toStringSexpSlice(ls string, sexps []SExp, rs string) string {
 	t := make([]byte, 0, 10)

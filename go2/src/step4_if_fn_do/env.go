@@ -51,8 +51,8 @@ func init() {
 		env:     makeEnvInternal(),
 		nextEnv: nil,
 	}
-	plus := CoreFunc{
-		fun: func(args List) (SExp, error) {
+	plus := CoreFunc(
+		func(args List) (SExp, error) {
 			s := 0
 			for _, v := range args {
 				switch v.(type) {
@@ -63,10 +63,9 @@ func init() {
 				}
 			}
 			return Int(s), nil
-		},
-	}
-	minus := CoreFunc{
-		fun: func(args List) (SExp, error) {
+		})
+	minus := CoreFunc(
+		func(args List) (SExp, error) {
 			s := int(args[0].(Int))
 			for _, v := range args[1:] {
 				switch v.(type) {
@@ -77,10 +76,9 @@ func init() {
 				}
 			}
 			return Int(s), nil
-		},
-	}
-	times := CoreFunc{
-		fun: func(args List) (SExp, error) {
+		})
+	times := CoreFunc(
+		func(args List) (SExp, error) {
 			s := 1
 			for _, v := range args {
 				switch v.(type) {
@@ -91,10 +89,9 @@ func init() {
 				}
 			}
 			return Int(s), nil
-		},
-	}
-	div := CoreFunc{
-		fun: func(args List) (SExp, error) {
+		})
+	div := CoreFunc(
+		func(args List) (SExp, error) {
 			s := int(args[0].(Int))
 			for _, v := range args[1:] {
 				switch v.(type) {
@@ -105,25 +102,22 @@ func init() {
 				}
 			}
 			return Int(s), nil
-		},
-	}
-	list := CoreFunc{
-		fun: func(args List) (SExp, error) {
+		})
+	list := CoreFunc(
+		func(args List) (SExp, error) {
 			return args, nil
-		},
-	}
-	listq := CoreFunc{
-		fun: func(args List) (SExp, error) {
+		})
+	listq := CoreFunc(
+		func(args List) (SExp, error) {
 			switch args[0].(type) {
 			case List:
 				return Bool(true), nil
 			default:
 				return Bool(false), nil
 			}
-		},
-	}
-	emptyq := CoreFunc{
-		fun: func(args List) (SExp, error) {
+		})
+	emptyq := CoreFunc(
+		func(args List) (SExp, error) {
 			switch args[0].(type) {
 			case List:
 				return Bool(len(args[0].(List)) == 0), nil
@@ -132,10 +126,9 @@ func init() {
 			default:
 				return Bool(false), nil
 			}
-		},
-	}
-	count := CoreFunc{
-		fun: func(args List) (SExp, error) {
+		})
+	count := CoreFunc(
+		func(args List) (SExp, error) {
 			switch args[0].(type) {
 			case List:
 				return Int(len(args[0].(List))), nil
@@ -144,28 +137,24 @@ func init() {
 			default:
 				return Int(0), nil
 			}
-		},
-	}
-	not := CoreFunc{
-		fun: func(args List) (SExp, error) {
-			b := true
-			switch args[0].(type) {
-			case NilType:
-				b = false
-			case Bool:
-				b = bool(args[0].(Bool))
-			case List:
-				list := args[0].(List)
-				b = len(list) == 0
-			}
-			return Bool(!b), nil
-		},
-	}
-	do := CoreFunc{
-		fun: func(args List) (SExp, error) {
+		})
+	not := CoreFunc(func(args List) (SExp, error) {
+		b := true
+		switch args[0].(type) {
+		case NilType:
+			b = false
+		case Bool:
+			b = bool(args[0].(Bool))
+		case List:
+			list := args[0].(List)
+			b = len(list) == 0
+		}
+		return Bool(!b), nil
+	})
+	do := CoreFunc(
+		func(args List) (SExp, error) {
 			return args[len(args)-1], nil
-		},
-	}
+		})
 	replEnv.set(Symbol("+"), plus)
 	replEnv.set(Symbol("-"), minus)
 	replEnv.set(Symbol("*"), times)
