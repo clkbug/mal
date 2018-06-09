@@ -1,6 +1,9 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 type envInternal map[Symbol]SExp
 
@@ -24,6 +27,10 @@ func (e Env) get(sym Symbol) (SExp, bool) {
 	return e.nextEnv.get(sym)
 }
 
+func (e Env) del(sym Symbol) {
+	delete(e.env, sym)
+}
+
 func makeNewEnv(e Env) Env {
 	return Env{
 		env:     make(envInternal),
@@ -39,6 +46,7 @@ func (e Env) copy() Env {
 		ne = e.nextEnv.copy()
 	}
 	for k, v := range e.env {
+		println(k.toString() + ", " + v.toString() + "のコピーをするよー")
 		ne.env[k] = v.copy()
 	}
 	return ne
@@ -103,6 +111,31 @@ func init() {
 			}
 			return Int(s), nil
 		})
+	cmp := func(f func(x, y int) bool) CoreFunc {
+		return CoreFunc(func(args List) (SExp, error) {
+			if len(args) < 2 {
+				return UNDEF, errors.New("few arguments for <,<=,>,>=")
+			}
+			switch x := args[0].(type) {
+			case Int:
+				switch y := args[1].(type) {
+				case Int:
+					return Bool(f(int(x), int(y))), nil
+				}
+			}
+			return UNDEF, errors.New("arguments for '<' should be Int")
+		})
+	}
+	lt := cmp(func(x, y int) bool { return x < y })
+	le := cmp(func(x, y int) bool { return x <= y })
+	gt := cmp(func(x, y int) bool { return x > y })
+	ge := cmp(func(x, y int) bool { return x >= y })
+	eq := CoreFunc(func(args List) (SExp, error) {
+		if len(args) < 2 {
+			return UNDEF, errors.New("few arguments for =")
+		}
+		return Bool(args[0].isSame(args[1])), nil
+	})
 	list := CoreFunc(
 		func(args List) (SExp, error) {
 			return args, nil
@@ -155,14 +188,29 @@ func init() {
 		func(args List) (SExp, error) {
 			return args[len(args)-1], nil
 		})
+	prn := CoreFunc(
+		func(args List) (SExp, error) {
+			s := make([]string, len(args))
+			for i, a := range args {
+				s[i] = a.toString()
+			}
+			println(strings.Join(s, " "))
+			return NIL, nil
+		})
 	replEnv.set(Symbol("+"), plus)
 	replEnv.set(Symbol("-"), minus)
 	replEnv.set(Symbol("*"), times)
 	replEnv.set(Symbol("/"), div)
+	replEnv.set(Symbol("<"), lt)
+	replEnv.set(Symbol("<="), le)
+	replEnv.set(Symbol(">"), gt)
+	replEnv.set(Symbol(">="), ge)
+	replEnv.set(Symbol("="), eq)
 	replEnv.set(Symbol("list"), list)
 	replEnv.set(Symbol("list?"), listq)
 	replEnv.set(Symbol("empty?"), emptyq)
 	replEnv.set(Symbol("count"), count)
 	replEnv.set(Symbol("not"), not)
 	replEnv.set(Symbol("do"), do)
+	replEnv.set(Symbol("prn"), prn)
 }

@@ -28,11 +28,15 @@ func isSpecialForm(s SExp) (string, bool) {
 
 func evalIf(env Env, l List) (SExp, error) {
 	cond := true
-	switch l[0].(type) {
+	c, err := l[0].eval(env)
+	if err != nil {
+		return UNDEF, err
+	}
+	switch c := c.(type) {
 	case NilType:
 		cond = false
 	case Bool:
-		cond = bool(l[0].(Bool))
+		cond = bool(c)
 	}
 	if cond {
 		return l[1].eval(env)
@@ -52,6 +56,23 @@ func evalDef(env Env, l List) (SExp, error) {
 			return UNDEF, err
 		}
 		env.set(s, v)
+
+		// if def! defines a recursive function,...
+		switch l := l[1].(type) {
+		case List:
+			switch t := l[0].(type) {
+			case Symbol:
+				if t == Symbol(FN) {
+					switch v := v.(type) {
+					case Closure:
+						v.env.set(s, v)
+						v.name = s
+					default:
+						panic("can't reach here")
+					}
+				}
+			}
+		}
 		return v, nil
 	default:
 		return UNDEF, errors.New("'(def! SYMBOL EXP)'")
