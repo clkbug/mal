@@ -178,11 +178,7 @@ func (l List) eval(env Env) (SExp, error) {
 }
 
 func (l List) copy() SExp {
-	t := make(List, len(l))
-	for i, v := range l {
-		t[i] = v.copy()
-	}
-	return t
+	return l
 }
 
 func (l List) isSame(s SExp) bool {
@@ -221,11 +217,7 @@ func (v Vector) eval(env Env) (SExp, error) {
 }
 
 func (v Vector) copy() SExp {
-	t := make(List, len(v))
-	for i, val := range v {
-		t[i] = val.copy()
-	}
-	return t
+	return v
 }
 
 func (v Vector) isSame(s SExp) bool {
@@ -313,17 +305,7 @@ func (c Closure) toString() string           { return "*Closure*" }
 func (c Closure) eval(env Env) (SExp, error) { return c, nil }
 func (c Closure) isSame(s SExp) bool         { return false } // Closure isn't comparable
 func (c Closure) copy() SExp {
-	println("Closure:" + c.name + "のコピーだよー")
-	c.env.del(c.name)
-	ret := Closure{
-		env:    c.env.copy(),
-		name:   c.name,
-		params: c.params,
-		body:   c.body,
-	}
-	c.env.set(c.name, c)
-	ret.env.set(ret.name, ret)
-	return ret
+	return c
 }
 func (c Closure) apply(args List) (SExp, error) {
 	for i, p := range c.params {
