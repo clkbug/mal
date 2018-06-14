@@ -140,7 +140,7 @@ func evalFn(env Env, l List) (SExp, error) {
 		case Symbol:
 			cparams[i] = p.(Symbol)
 		default:
-			return UNDEF, errors.New("fn* param should be SYMBOL ... but got " + p.toString())
+			return UNDEF, errors.New("fn* param should be SYMBOL ... but got " + p.toString(true))
 		}
 	}
 	return Closure{
