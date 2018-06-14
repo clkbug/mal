@@ -308,10 +308,11 @@ func (c Closure) copy() SExp {
 	return c
 }
 func (c Closure) apply(args List) (SExp, error) {
+	ne := makeNewEnv(c.env)
 	for i, p := range c.params {
-		c.env.set(p, args[i])
+		ne.set(p, args[i])
 	}
-	return c.body.eval(c.env)
+	return c.body.eval(ne)
 }
 
 func toStringSexpSlice(ls string, sexps []SExp, rs string) string {
