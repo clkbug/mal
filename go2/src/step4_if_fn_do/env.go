@@ -46,6 +46,7 @@ func (e Env) copy() Env {
 		ne = e.nextEnv.copy()
 	}
 	for k, v := range e.env {
+		println(k.toString() + ", " + v.toString() + "のコピーをするよー")
 		ne.env[k] = v.copy()
 	}
 	return ne

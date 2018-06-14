@@ -177,7 +177,13 @@ func (l List) eval(env Env) (SExp, error) {
 	return UNDEF, errors.New("eval?")
 }
 
-func (l List) copy() SExp { return l }
+func (l List) copy() SExp {
+	t := make(List, len(l))
+	for i, v := range l {
+		t[i] = v.copy()
+	}
+	return t
+}
 
 func (l List) isSame(s SExp) bool {
 	switch s := s.(type) {
@@ -214,7 +220,13 @@ func (v Vector) eval(env Env) (SExp, error) {
 	return ret, nil
 }
 
-func (v Vector) copy() SExp { return v }
+func (v Vector) copy() SExp {
+	t := make(List, len(v))
+	for i, val := range v {
+		t[i] = val.copy()
+	}
+	return t
+}
 
 func (v Vector) isSame(s SExp) bool {
 	switch s := s.(type) {
@@ -255,7 +267,13 @@ func (hm HashMap) eval(env Env) (SExp, error) {
 	return ret, nil
 }
 
-func (hm HashMap) copy() SExp { return hm }
+func (hm HashMap) copy() SExp {
+	t := make(HashMap, len(hm))
+	for key, val := range hm {
+		t[key] = val.copy()
+	}
+	return t
+}
 
 func (hm HashMap) isSame(s SExp) bool {
 	switch s := s.(type) {
@@ -294,7 +312,19 @@ type Closure struct {
 func (c Closure) toString() string           { return "*Closure*" }
 func (c Closure) eval(env Env) (SExp, error) { return c, nil }
 func (c Closure) isSame(s SExp) bool         { return false } // Closure isn't comparable
-func (c Closure) copy() SExp                 { return c }
+func (c Closure) copy() SExp {
+	println("Closure:" + c.name + "のコピーだよー")
+	c.env.del(c.name)
+	ret := Closure{
+		env:    c.env.copy(),
+		name:   c.name,
+		params: c.params,
+		body:   c.body,
+	}
+	c.env.set(c.name, c)
+	ret.env.set(ret.name, ret)
+	return ret
+}
 func (c Closure) apply(args List) (SExp, error) {
 	for i, p := range c.params {
 		c.env.set(p, args[i])
