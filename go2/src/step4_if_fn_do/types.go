@@ -310,7 +310,12 @@ func (c Closure) copy() SExp {
 func (c Closure) apply(args List) (SExp, error) {
 	ne := makeNewEnv(c.env)
 	for i, p := range c.params {
-		ne.set(p, args[i])
+		if string(p) == "&" {
+			ne.set(c.params[i+1], args[i:])
+			break
+		} else {
+			ne.set(p, args[i])
+		}
 	}
 	return c.body.eval(ne)
 }
