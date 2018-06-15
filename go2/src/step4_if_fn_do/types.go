@@ -115,12 +115,9 @@ type StringLiteral string
 
 func (s StringLiteral) toString(isReadable bool) string {
 	if !isReadable {
-		return fmt.Sprintf("%s", s)
+		return fmt.Sprintf("\"%s\"", s.escape())
 	}
-	ss := strings.Replace(string(s), "\\n", "\n", -1)
-	ss = strings.Replace(ss, "\\\\", "\\", -1)
-	ss = strings.Replace(ss, "\\\"", "\"", -1)
-	return fmt.Sprintf("%s", ss)
+	return string(s.escape())
 }
 func (s StringLiteral) eval(env Env) (SExp, error) { return s, nil }
 func (s StringLiteral) copy() SExp                 { return s }
@@ -130,6 +127,19 @@ func (s StringLiteral) isSame(t SExp) bool {
 		return s == t
 	}
 	return false
+}
+
+func (s StringLiteral) escape() StringLiteral {
+	ss := strings.Replace(string(s), "\\", "\\\\", -1)
+	ss = strings.Replace(ss, "\n", "\\n", -1)
+	ss = strings.Replace(ss, "\"", "\\\"", -1)
+	return StringLiteral(ss)
+}
+func (s StringLiteral) unescape() StringLiteral {
+	ss := strings.Replace(string(s), "\\\\", "\\", -1)
+	ss = strings.Replace(ss, "\\n", "\n", -1)
+	ss = strings.Replace(ss, "\\\"", "\"", -1)
+	return StringLiteral(ss)
 }
 
 // List : e.g. (1 2 3)

@@ -187,43 +187,28 @@ func init() {
 		func(args List) (SExp, error) {
 			return args[len(args)-1], nil
 		})
+	prstr := CoreFunc(
+		func(args List) (SExp, error) {
+			ss := make([]string, 0)
+			for _, a := range args {
+				ss = append(ss, a.toString(true))
+			}
+			return StringLiteral(strings.Join(ss, " ")), nil
+		})
 	prn := CoreFunc(
 		func(args List) (SExp, error) {
-			s := make([]string, len(args))
-			for i, a := range args {
-				s[i] = a.toString(false)
-			}
-			println(strings.Join(s, " "))
 			return NIL, nil
 		})
 	str := CoreFunc(
 		func(args List) (SExp, error) {
 			s := ""
 			for _, a := range args {
-				switch a := a.(type) {
-				case StringLiteral:
-					s += string(a)
-				default:
-					s += a.toString(false)
-				}
-			}
-			return StringLiteral(s), nil
-		})
-	prstr := CoreFunc(
-		func(args List) (SExp, error) {
-			s := ""
-			for _, a := range args {
-				s += a.toString(true)
+				s += a.toString(false)
 			}
 			return StringLiteral(s), nil
 		})
 	printlnCF := CoreFunc(
 		func(args List) (SExp, error) {
-			s := ""
-			for _, a := range args {
-				s += a.toString(true)
-			}
-			println(s)
 			return NIL, nil
 		})
 	replEnv.set(Symbol("+"), plus)
