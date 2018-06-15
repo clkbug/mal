@@ -191,7 +191,7 @@ func init() {
 		func(args List) (SExp, error) {
 			ss := make([]string, 0)
 			for _, a := range args {
-				ss = append(ss, a.toString(true))
+				ss = append(ss, a.printStr(true))
 			}
 			return StringLiteral(strings.Join(ss, " ")), nil
 		})
@@ -203,7 +203,7 @@ func init() {
 		func(args List) (SExp, error) {
 			s := ""
 			for _, a := range args {
-				s += a.toString(false)
+				s += a.printStr(false)
 			}
 			return StringLiteral(s), nil
 		})

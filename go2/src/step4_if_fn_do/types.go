@@ -8,7 +8,8 @@ import (
 
 // SExp : a S SExpression
 type SExp interface {
-	toString(isReadable bool) string
+	toString() string
+	printStr(isReadable bool) string
 	eval(Env) (SExp, error)
 	copy() SExp
 	isSame(SExp) bool
@@ -17,9 +18,10 @@ type SExp interface {
 // Undefined : Undefined symbol. When an error occurred, reader returns UNDEF and err
 type Undefined int
 
-func (u Undefined) toString(isReadable bool) string { return "*Undefined*" }
-func (u Undefined) eval(env Env) (SExp, error)      { return u, nil }
-func (u Undefined) copy() SExp                      { return u }
+func (u Undefined) toString() string           { return "*Undefined*" }
+func (u Undefined) printStr(_ bool) string     { return u.toString() }
+func (u Undefined) eval(env Env) (SExp, error) { return u, nil }
+func (u Undefined) copy() SExp                 { return u }
 func (u Undefined) isSame(s SExp) bool {
 	switch s.(type) {
 	case Undefined:
@@ -34,9 +36,10 @@ const UNDEF = Undefined(0)
 // NilType : the type of nil
 type NilType int
 
-func (n NilType) toString(isReadable bool) string { return "nil" }
-func (n NilType) eval(env Env) (SExp, error)      { return n, nil }
-func (n NilType) copy() SExp                      { return n }
+func (n NilType) toString() string           { return "nil" }
+func (n NilType) printStr(_ bool) string     { return n.toString() }
+func (n NilType) eval(env Env) (SExp, error) { return n, nil }
+func (n NilType) copy() SExp                 { return n }
 func (n NilType) isSame(s SExp) bool {
 	switch s.(type) {
 	case NilType:
@@ -51,9 +54,10 @@ const NIL = NilType(0)
 // Bool : bool
 type Bool bool
 
-func (b Bool) toString(isReadable bool) string { return fmt.Sprint(b) }
-func (b Bool) eval(env Env) (SExp, error)      { return b, nil }
-func (b Bool) copy() SExp                      { return b }
+func (b Bool) toString() string           { return fmt.Sprint(b) }
+func (b Bool) printStr(_ bool) string     { return b.toString() }
+func (b Bool) eval(env Env) (SExp, error) { return b, nil }
+func (b Bool) copy() SExp                 { return b }
 func (b Bool) isSame(s SExp) bool {
 	switch s := s.(type) {
 	case Bool:
@@ -65,9 +69,10 @@ func (b Bool) isSame(s SExp) bool {
 // Int : integer
 type Int int
 
-func (i Int) toString(isReadable bool) string { return fmt.Sprint(i) }
-func (i Int) eval(env Env) (SExp, error)      { return i, nil }
-func (i Int) copy() SExp                      { return i }
+func (i Int) toString() string           { return fmt.Sprint(i) }
+func (i Int) printStr(_ bool) string     { return i.toString() }
+func (i Int) eval(env Env) (SExp, error) { return i, nil }
+func (i Int) copy() SExp                 { return i }
 func (i Int) isSame(s SExp) bool {
 	switch s := s.(type) {
 	case Int:
@@ -79,13 +84,14 @@ func (i Int) isSame(s SExp) bool {
 // Symbol : Symbol
 type Symbol string
 
-func (s Symbol) toString(isReadable bool) string { return string(s) }
+func (s Symbol) toString() string       { return string(s) }
+func (s Symbol) printStr(_ bool) string { return s.toString() }
 func (s Symbol) eval(env Env) (SExp, error) {
 	v, ok := env.get(s)
 	if ok {
 		return v, nil
 	}
-	return UNDEF, errors.New("can't find Symbol " + s.toString(true))
+	return UNDEF, errors.New("can't find Symbol " + s.toString())
 }
 func (s Symbol) copy() SExp { return s }
 func (s Symbol) isSame(se SExp) bool {
@@ -99,9 +105,10 @@ func (s Symbol) isSame(se SExp) bool {
 // Keyword : Keyword
 type Keyword string
 
-func (k Keyword) toString(isReadable bool) string { return ":" + string(k) }
-func (k Keyword) eval(env Env) (SExp, error)      { return k, nil }
-func (k Keyword) copy() SExp                      { return k }
+func (k Keyword) toString() string           { return ":" + string(k) }
+func (k Keyword) printStr(_ bool) string     { return k.toString() }
+func (k Keyword) eval(env Env) (SExp, error) { return k, nil }
+func (k Keyword) copy() SExp                 { return k }
 func (k Keyword) isSame(s SExp) bool {
 	switch s := s.(type) {
 	case Keyword:
@@ -113,7 +120,10 @@ func (k Keyword) isSame(s SExp) bool {
 // StringLiteral : should be print with '"'
 type StringLiteral string
 
-func (s StringLiteral) toString(isReadable bool) string {
+func (s StringLiteral) toString() string {
+	return "\"" + string(s) + "\""
+}
+func (s StringLiteral) printStr(isReadable bool) string {
 	if !isReadable {
 		return fmt.Sprintf("\"%s\"", s.escape())
 	}
@@ -145,7 +155,10 @@ func (s StringLiteral) unescape() StringLiteral {
 // List : e.g. (1 2 3)
 type List []SExp
 
-func (l List) toString(isReadable bool) string {
+func (l List) toString() string {
+	return toStringSexpSlice("(", []SExp(l), ")", true)
+}
+func (l List) printStr(isReadable bool) string {
 	return toStringSexpSlice("(", []SExp(l), ")", isReadable)
 }
 
@@ -221,7 +234,10 @@ func (l List) isSame(s SExp) bool {
 // Vector : e.g. [1 2 3]
 type Vector []SExp
 
-func (v Vector) toString(isReadable bool) string {
+func (v Vector) toString() string {
+	return toStringSexpSlice("[", []SExp(v), "]", true)
+}
+func (v Vector) printStr(isReadable bool) string {
 	return toStringSexpSlice("[", []SExp(v), "]", isReadable)
 }
 
@@ -266,7 +282,10 @@ func (v Vector) toList() List {
 // HashMap : {x 1, y 2}ya
 type HashMap []SExp
 
-func (hm HashMap) toString(isReadable bool) string {
+func (hm HashMap) toString() string {
+	return toStringSexpSlice("{", []SExp(hm), "}", true)
+}
+func (hm HashMap) printStr(isReadable bool) string {
 	return toStringSexpSlice("{", []SExp(hm), "}", isReadable)
 }
 
@@ -309,10 +328,11 @@ func (hm HashMap) isSame(s SExp) bool {
 // CoreFunc : function
 type CoreFunc func(args List) (SExp, error)
 
-func (c CoreFunc) toString(isReadable bool) string { return "*CoreFunc*" }
-func (c CoreFunc) eval(env Env) (SExp, error)      { return c, nil }
-func (c CoreFunc) copy() SExp                      { return c }
-func (c CoreFunc) isSame(s SExp) bool              { return false } // Function isn't comparable
+func (c CoreFunc) toString() string           { return "*CoreFunc*" }
+func (c CoreFunc) printStr(_ bool) string     { return "*CoreFunc*" }
+func (c CoreFunc) eval(env Env) (SExp, error) { return c, nil }
+func (c CoreFunc) copy() SExp                 { return c }
+func (c CoreFunc) isSame(s SExp) bool         { return false } // Function isn't comparable
 
 func (c CoreFunc) apply(args List) (SExp, error) { return c(args) }
 
@@ -324,9 +344,10 @@ type Closure struct {
 	body   SExp
 }
 
-func (c Closure) toString(isReadable bool) string { return "*Closure*" }
-func (c Closure) eval(env Env) (SExp, error)      { return c, nil }
-func (c Closure) isSame(s SExp) bool              { return false } // Closure isn't comparable
+func (c Closure) toString() string           { return "*Closure*" }
+func (c Closure) printStr(_ bool) string     { return "*Closure*" }
+func (c Closure) eval(env Env) (SExp, error) { return c, nil }
+func (c Closure) isSame(s SExp) bool         { return false } // Closure isn't comparable
 func (c Closure) copy() SExp {
 	return c
 }
@@ -347,7 +368,7 @@ func toStringSexpSlice(ls string, sexps []SExp, rs string, isReadable bool) stri
 	t := make([]byte, 0, 10)
 	t = append(t, ls...)
 	for i, v := range sexps {
-		t = append(t, v.toString(isReadable)...)
+		t = append(t, v.toString()...)
 		if i != len(sexps)-1 {
 			t = append(t, " "...)
 		}

@@ -25,7 +25,7 @@ func eval(e SExp) SExp {
 }
 
 func print(e SExp) {
-	fmt.Println(e.toString(true))
+	fmt.Println(e.printStr(true))
 }
 
 func main() {
