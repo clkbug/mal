@@ -242,7 +242,7 @@ func (r *Reader) readAtom() (SExp, error) {
 		}
 		return Int(i), nil
 	} else if tmp[0] == '"' {
-		return StringLiteral(string(tmp[1 : len(tmp)-1])), nil
+		return StringLiteral(string(tmp[1 : len(tmp)-1])).unescape(), nil
 	} else if tmp[0] == ':' {
 		return Keyword(tmp[1:]), nil
 	} else if t == "true" {

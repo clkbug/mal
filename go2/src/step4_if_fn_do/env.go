@@ -189,14 +189,12 @@ func init() {
 		})
 	prstr := CoreFunc(
 		func(args List) (SExp, error) {
-			ss := make([]string, 0)
-			for _, a := range args {
-				ss = append(ss, a.printStr(true))
-			}
-			return StringLiteral(strings.Join(ss, " ")), nil
+			s := printStrList(args, true, " ")
+			return StringLiteral(s), nil
 		})
 	prn := CoreFunc(
 		func(args List) (SExp, error) {
+			println(printStrList(args, true, " "))
 			return NIL, nil
 		})
 	str := CoreFunc(
@@ -230,4 +228,12 @@ func init() {
 	replEnv.set(Symbol("str"), str)
 	replEnv.set(Symbol("pr-str"), prstr)
 	replEnv.set(Symbol("println"), printlnCF)
+}
+
+func printStrList(sexps List, isReadable bool, sep string) string {
+	s := make([]string, len(sexps))
+	for i, e := range sexps {
+		s[i] = e.printStr(isReadable)
+	}
+	return strings.Join(s, sep)
 }

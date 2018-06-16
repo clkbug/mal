@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 // SExp : a S SExpression
@@ -124,10 +123,10 @@ func (s StringLiteral) toString() string {
 	return "\"" + string(s) + "\""
 }
 func (s StringLiteral) printStr(isReadable bool) string {
-	if !isReadable {
+	if isReadable {
 		return fmt.Sprintf("\"%s\"", s.escape())
 	}
-	return string(s.escape())
+	return string(s)
 }
 func (s StringLiteral) eval(env Env) (SExp, error) { return s, nil }
 func (s StringLiteral) copy() SExp                 { return s }
@@ -140,16 +139,41 @@ func (s StringLiteral) isSame(t SExp) bool {
 }
 
 func (s StringLiteral) escape() StringLiteral {
-	ss := strings.Replace(string(s), "\\", "\\\\", -1)
-	ss = strings.Replace(ss, "\n", "\\n", -1)
-	ss = strings.Replace(ss, "\"", "\\\"", -1)
-	return StringLiteral(ss)
+	str := string(s)
+	ret := ""
+	for _, r := range str {
+		if r == '\n' || r == '"' || r == '\\' {
+			ret += "\\" + fmt.Sprintf("%c", r)
+		} else {
+			ret += fmt.Sprintf("%c", r)
+		}
+	}
+	return StringLiteral(ret)
 }
 func (s StringLiteral) unescape() StringLiteral {
-	ss := strings.Replace(string(s), "\\\\", "\\", -1)
-	ss = strings.Replace(ss, "\\n", "\n", -1)
-	ss = strings.Replace(ss, "\\\"", "\"", -1)
-	return StringLiteral(ss)
+	str := string(s)
+	ret := ""
+	bs := false
+	for _, r := range str {
+		if bs {
+			bs = false
+			switch r {
+			case 'n':
+				ret += "\n"
+			case '"':
+				ret += "\""
+			case '\\':
+				ret += "\\"
+			default:
+				panic("unescape!!!")
+			}
+		} else if r == '\\' {
+			bs = true
+		} else {
+			ret += fmt.Sprintf("%c", r)
+		}
+	}
+	return StringLiteral(ret)
 }
 
 // List : e.g. (1 2 3)
@@ -368,7 +392,7 @@ func toStringSexpSlice(ls string, sexps []SExp, rs string, isReadable bool) stri
 	t := make([]byte, 0, 10)
 	t = append(t, ls...)
 	for i, v := range sexps {
-		t = append(t, v.toString()...)
+		t = append(t, v.printStr(isReadable)...)
 		if i != len(sexps)-1 {
 			t = append(t, " "...)
 		}
