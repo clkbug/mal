@@ -65,6 +65,7 @@ func evalDef(env Env, l List) (SExp, error) {
 				if t == Symbol(FN) {
 					switch v := v.(type) {
 					case Closure:
+						v.env = env
 						v.env.set(s, v)
 						v.name = s
 					default:

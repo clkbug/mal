@@ -150,7 +150,7 @@ func (s StringLiteral) escape() StringLiteral {
 		case '\\':
 			ret += "\\\\"
 		default:
-			ret+= fmt.Sprintf("%c",r)
+			ret += fmt.Sprintf("%c", r)
 		}
 	}
 	return StringLiteral(ret)
@@ -232,7 +232,7 @@ func (l List) eval(env Env) (SExp, error) {
 		}
 		return c.(Closure).apply(args)
 	default:
-		println("error: can't apply")
+		println("error: can't apply\n\t" + l.toString())
 	}
 
 	return UNDEF, errors.New("eval?")
