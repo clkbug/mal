@@ -142,10 +142,15 @@ func (s StringLiteral) escape() StringLiteral {
 	str := string(s)
 	ret := ""
 	for _, r := range str {
-		if r == '\n' || r == '"' || r == '\\' {
-			ret += "\\" + fmt.Sprintf("%c", r)
-		} else {
-			ret += fmt.Sprintf("%c", r)
+		switch r {
+		case '\n':
+			ret += "\\n"
+		case '"':
+			ret += "\\\""
+		case '\\':
+			ret += "\\\\"
+		default:
+			ret+= fmt.Sprintf("%c",r)
 		}
 	}
 	return StringLiteral(ret)

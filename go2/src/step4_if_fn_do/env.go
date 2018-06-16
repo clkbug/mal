@@ -207,6 +207,7 @@ func init() {
 		})
 	printlnCF := CoreFunc(
 		func(args List) (SExp, error) {
+			println(printStrList(args, false, " "))
 			return NIL, nil
 		})
 	replEnv.set(Symbol("+"), plus)
