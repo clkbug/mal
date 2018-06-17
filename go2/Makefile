@@ -4,7 +4,7 @@ BINS = step0_repl \
   step3_env \
   step4_if_fn_do \
   step5_tco \
-  #step6_file \
+  step6_file \
   #step7_quote \
   #step8_macros \
   #step9_try \
