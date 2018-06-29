@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"os"
 	"strings"
 )
 
@@ -210,6 +211,23 @@ func init() {
 			println(printStrList(args, false, " "))
 			return NIL, nil
 		})
+	readString := CoreFunc(
+		func(args List) (SExp, error) {
+			s, err := args[0].(StringLiteral)
+			if !err {
+				return NIL, nil
+			}
+			if len(s) == 0 {
+				os.Exit(0)
+			}
+			r := initReader(string(s))
+			return r.readForm()
+		})
+	evalCore := CoreFunc(
+		func(args List) (SExp, error) {
+			return args[0].eval(replEnv)
+		})
+
 	replEnv.set(Symbol("+"), plus)
 	replEnv.set(Symbol("-"), minus)
 	replEnv.set(Symbol("*"), times)
@@ -229,6 +247,8 @@ func init() {
 	replEnv.set(Symbol("str"), str)
 	replEnv.set(Symbol("pr-str"), prstr)
 	replEnv.set(Symbol("println"), printlnCF)
+	replEnv.set(Symbol("read-string"), readString)
+	replEnv.set(Symbol("eval"), evalCore)
 }
 
 func printStrList(sexps List, isReadable bool, sep string) string {
