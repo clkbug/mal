@@ -405,3 +405,26 @@ func toStringSexpSlice(ls string, sexps []SExp, rs string, isReadable bool) stri
 	t = append(t, rs...)
 	return string(t)
 }
+
+// Atom : atom
+type Atom struct {
+	ref SExp
+}
+
+func (a Atom) toString() string {
+	return "(atom " + a.ref.toString() + ")"
+}
+func (a Atom) printStr(b bool) string {
+	return "(atom " + a.ref.printStr(b) + ")"
+}
+func (a Atom) eval(env Env) (SExp, error) { return a, nil }
+func (a Atom) isSame(s SExp) bool {
+	switch s := s.(type) {
+	case Atom:
+		if a == s {
+			return true
+		}
+	}
+	return false
+}
+func (a Atom) copy() SExp { return a }

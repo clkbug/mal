@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -215,7 +216,7 @@ func init() {
 		func(args List, _ Env) (SExp, error) {
 			s, err := args[0].(StringLiteral)
 			if !err {
-				return NIL, nil
+				return NIL, errors.New("invalid read-string arg")
 			}
 			if len(s) == 0 {
 				os.Exit(0)
@@ -227,7 +228,72 @@ func init() {
 		func(args List, env Env) (SExp, error) {
 			return args[0].eval(env)
 		})
-
+	slurp := CoreFunc(
+		func(args List, env Env) (SExp, error) {
+			fn, ok := args[0].(StringLiteral)
+			if !ok {
+				return NIL, errors.New("invalid slurp arg")
+			}
+			fp, err := os.Open(string(fn))
+			if err != nil {
+				return NIL, err
+			}
+			defer fp.Close()
+			contents, err := ioutil.ReadAll(fp)
+			if err != nil {
+				return NIL, err
+			}
+			return StringLiteral(contents), nil
+		})
+	loadFile := CoreFunc(
+		func(args List, env Env) (SExp, error) {
+			s, err := slurp.apply(args, env)
+			if err != nil {
+				return NIL, err
+			}
+			str, ok := s.(StringLiteral)
+			if !ok {
+				return NIL, errors.New("!")
+			}
+			r := initReader(string(str))
+			var val SExp = NIL
+			for !r.isReachedEND {
+				sexp, err := r.readForm()
+				if err != nil {
+					return NIL, err
+				}
+				buf, err := sexp.eval(env)
+				if err != nil {
+					return val, err
+				}
+				if buf != UNDEF {
+					val = buf
+				}
+			}
+			return val, nil
+		})
+	atom := CoreFunc(
+		func(args List, env Env) (SExp, error) {
+			return Atom{
+				ref: args[0],
+			}, nil
+		})
+	atomq := CoreFunc(
+		func(args List, env Env) (SExp, error) {
+			switch args[0].(type) {
+			case Atom:
+				return Bool(true), nil
+			}
+			return Bool(false), nil
+		})
+	deref := CoreFunc(
+		func(args List, env Env) (SExp, error) {
+			switch a := args[0].(type) {
+			case Atom:
+				return a.ref, nil
+			}
+			return NIL, nil
+		})
 	replEnv.set(Symbol("+"), plus)
 	replEnv.set(Symbol("-"), minus)
 	replEnv.set(Symbol("*"), times)
@@ -249,6 +315,11 @@ func init() {
 	replEnv.set(Symbol("println"), printlnCF)
 	replEnv.set(Symbol("read-string"), readString)
 	replEnv.set(Symbol("eval"), evalCore)
+	replEnv.set(Symbol("slurp"), slurp)
+	replEnv.set(Symbol("load-file"), loadFile)
+	replEnv.set(Symbol("atom"), atom)
+	replEnv.set(Symbol("atom?"), atomq)
+	replEnv.set(Symbol("deref"), deref)
 }
 
 func printStrList(sexps List, isReadable bool, sep string) string {
