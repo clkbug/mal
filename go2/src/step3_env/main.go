@@ -15,17 +15,17 @@ func read(scanner *bufio.Scanner) (SExp, error) {
 	return r.readForm()
 }
 
-func print(e SExp) {
-	switch e.(type) {
-	case nil:
-	default:
-		fmt.Println(toString(e))
+func eval(e SExp) SExp {
+	exp, err := e.eval(replEnv)
+	if err != nil {
+		println(err.Error())
+		return UNDEF
 	}
+	return exp
 }
 
-func init() {
-	initSpecialFormSet()
-	initReplEnv()
+func print(e SExp) {
+	fmt.Println(e.toString())
 }
 
 func main() {
@@ -36,13 +36,7 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			res, err := eval(s)
-			if err != nil {
-				fmt.Println(err)
-			} else {
-				print(res)
-			}
-
+			print(eval(s))
 		}
 		fmt.Print("user> ")
 	}

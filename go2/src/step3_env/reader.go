@@ -144,7 +144,7 @@ func isSpecial(c rune) bool {
 func (r *Reader) readForm() (SExp, error) {
 	t, err := r.peek()
 	if err != nil {
-		return t, err
+		return UNDEF, err
 	}
 	switch t {
 	case "(":
@@ -190,7 +190,7 @@ func (r *Reader) readForm() (SExp, error) {
 		qd[1] = s
 		return List(qd), nil
 	case "":
-		return nil, nil
+		return UNDEF, nil
 	default:
 		return r.readAtom()
 	}
@@ -203,7 +203,7 @@ func (r *Reader) readSeq(right string) (SExp, error) {
 		t, err := r.peek()
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "expected '\"'") {
-				return t, fmt.Errorf("expected '%s', got EOF", right)
+				return UNDEF, fmt.Errorf("expected '%s', got EOF", right)
 			}
 		}
 		if t == Token(right) {
@@ -214,7 +214,7 @@ func (r *Reader) readSeq(right string) (SExp, error) {
 		}
 		h, err := r.readForm()
 		if err != nil {
-			return l, err
+			return UNDEF, err
 		}
 		l = append(l, h)
 	}
@@ -226,25 +226,25 @@ func (r *Reader) readSeq(right string) (SExp, error) {
 	case "}":
 		return HashMap(l), nil
 	default:
-		return l, errors.New("Invalid 'right' in reader.readSeq")
+		return UNDEF, errors.New("Invalid 'right' in reader.readSeq")
 	}
 }
 
 func (r *Reader) readAtom() (SExp, error) {
 	t, err := r.next()
 	if err != nil {
-		return t, err
+		return UNDEF, err
 	}
-	if tmp := []rune(string(t)); strings.ContainsAny(runeToString(tmp[0]), "0123456789") || (tmp[0] == '-' && len(tmp) >= 2 && strings.ContainsAny(runeToString(tmp[1]), "0123456789")) {
+	if tmp := []rune(string(t)); strings.ContainsAny(runeToString(tmp[0]), "-0123456789") {
 		i, e := strconv.Atoi(string(t))
 		if e != nil {
-			return 0, e
+			return Symbol(t), nil // when ParseInt fails, this works
 		}
-		return i, nil
+		return Int(i), nil
 	} else if tmp[0] == '"' {
 		return StringLiteral(string(tmp[1 : len(tmp)-1])), nil
 	} else if tmp[0] == ':' {
-		return Keyword(t), nil
+		return Keyword(tmp[1:]), nil
 	}
 	return Symbol(t), nil
 }

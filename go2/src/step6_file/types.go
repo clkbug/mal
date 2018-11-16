@@ -150,7 +150,7 @@ func (s StringLiteral) escape() StringLiteral {
 		case '\\':
 			ret += "\\\\"
 		default:
-			ret+= fmt.Sprintf("%c",r)
+			ret += fmt.Sprintf("%c", r)
 		}
 	}
 	return StringLiteral(ret)
@@ -221,7 +221,7 @@ func (l List) eval(env Env) (SExp, error) {
 				return UNDEF, err
 			}
 		}
-		return c.(CoreFunc).apply(args)
+		return c.(CoreFunc).apply(args, env)
 	case Closure:
 		args := make(List, len(l)-1)
 		for i, elem := range l[1:] {
@@ -232,7 +232,7 @@ func (l List) eval(env Env) (SExp, error) {
 		}
 		return c.(Closure).apply(args)
 	default:
-		println("error: can't apply")
+		println("error: can't apply\n\t" + l.toString())
 	}
 
 	return UNDEF, errors.New("eval?")
@@ -355,7 +355,7 @@ func (hm HashMap) isSame(s SExp) bool {
 }
 
 // CoreFunc : function
-type CoreFunc func(args List) (SExp, error)
+type CoreFunc func(args List, env Env) (SExp, error)
 
 func (c CoreFunc) toString() string           { return "*CoreFunc*" }
 func (c CoreFunc) printStr(_ bool) string     { return "*CoreFunc*" }
@@ -363,7 +363,7 @@ func (c CoreFunc) eval(env Env) (SExp, error) { return c, nil }
 func (c CoreFunc) copy() SExp                 { return c }
 func (c CoreFunc) isSame(s SExp) bool         { return false } // Function isn't comparable
 
-func (c CoreFunc) apply(args List) (SExp, error) { return c(args) }
+func (c CoreFunc) apply(args List, env Env) (SExp, error) { return c(args, env) }
 
 // Closure : environment + arg List + body
 type Closure struct {
@@ -405,3 +405,26 @@ func toStringSexpSlice(ls string, sexps []SExp, rs string, isReadable bool) stri
 	t = append(t, rs...)
 	return string(t)
 }
+
+// Atom : atom
+type Atom struct {
+	ref SExp
+}
+
+func (a Atom) toString() string {
+	return "(atom " + a.ref.toString() + ")"
+}
+func (a Atom) printStr(b bool) string {
+	return "(atom " + a.ref.printStr(b) + ")"
+}
+func (a Atom) eval(env Env) (SExp, error) { return a, nil }
+func (a Atom) isSame(s SExp) bool {
+	switch s := s.(type) {
+	case Atom:
+		if a == s {
+			return true
+		}
+	}
+	return false
+}
+func (a Atom) copy() SExp { return a }

@@ -14,14 +14,16 @@ func read(scanner *bufio.Scanner) (SExp, error) {
 	r := initReader(s)
 	return r.readForm()
 }
+
 func eval(e SExp) SExp { return e }
 
 func print(e SExp) {
 	switch e.(type) {
 	case nil:
-	default:
-		fmt.Println(toString(e))
+		fmt.Println("hoge")
+
 	}
+	fmt.Println(e.toString())
 }
 
 func main() {
