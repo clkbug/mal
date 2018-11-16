@@ -79,11 +79,11 @@ DOCKERIZE =
 #
 
 IMPLS = ada awk bash basic c chuck clojure coffee common-lisp cpp crystal cs d dart \
-	elisp elixir elm erlang es6 factor fantom forth fsharp go go2 groovy gst guile haskell \
-	haxe hy io java js julia kotlin livescript logo lua make mal matlab miniMAL \
-	nasm nim objc objpascal ocaml perl perl6 php pil plpgsql plsql powershell ps \
-	python r racket rexx rpython ruby rust rust2 scala scheme skew swift swift3 tcl \
-	ts vb vhdl vimscript yorick
+	elisp elixir elm erlang es6 factor fantom forth fsharp go go2 groovy gnu-smalltalk \
+	guile haskell haxe hy io java js julia kotlin livescript logo lua make mal \
+	matlab miniMAL nasm nim objc objpascal ocaml perl perl6 php picolisp plpgsql \
+	plsql powershell ps python r racket rexx rpython ruby rust rust2 scala scheme skew \
+	swift swift3 tcl ts vb vhdl vimscript yorick
 
 EXTENSION = .mal
 
@@ -124,8 +124,6 @@ test_EXCLUDES += test^plpgsql^step5 # too slow for 10,000
 test_EXCLUDES += test^plsql^step5  # too slow for 10,000
 test_EXCLUDES += test^powershell^step5  # too slow for 10,000
 test_EXCLUDES += $(if $(filter cpp,$(haxe_MODE)),test^haxe^step5,) # cpp finishes 10,000, segfaults at 100,000
-
-perf_EXCLUDES = mal  # TODO: fix this
 
 dist_EXCLUDES += mal
 # TODO: still need to implement dist
@@ -197,7 +195,7 @@ fsharp_STEP_TO_PROG =  fsharp/$($(1)).exe
 go_STEP_TO_PROG =      go/$($(1))
 go2_STEP_TO_PROG =      go2/$($(1))
 groovy_STEP_TO_PROG =  groovy/$($(1)).groovy
-gst_STEP_TO_PROG =     gst/$($(1)).st
+gnu-smalltalk_STEP_TO_PROG = gnu-smalltalk/$($(1)).st
 guile_STEP_TO_PROG =   guile/$($(1)).scm
 haskell_STEP_TO_PROG = haskell/$($(1))
 haxe_STEP_TO_PROG =    $(haxe_STEP_TO_PROG_$(haxe_MODE))
@@ -222,7 +220,7 @@ ocaml_STEP_TO_PROG =   ocaml/$($(1))
 perl_STEP_TO_PROG =    perl/$($(1)).pl
 perl6_STEP_TO_PROG =   perl6/$($(1)).pl
 php_STEP_TO_PROG =     php/$($(1)).php
-pil_STEP_TO_PROG =     pil/$($(1)).l
+picolisp_STEP_TO_PROG = picolisp/$($(1)).l
 plpgsql_STEP_TO_PROG = plpgsql/$($(1)).sql
 plsql_STEP_TO_PROG =   plsql/$($(1)).sql
 powershell_STEP_TO_PROG =  powershell/$($(1)).ps1
@@ -233,8 +231,12 @@ racket_STEP_TO_PROG =  racket/$($(1)).rkt
 rexx_STEP_TO_PROG =    rexx/$($(1)).rexxpp
 rpython_STEP_TO_PROG = rpython/$($(1))
 ruby_STEP_TO_PROG =    ruby/$($(1)).rb
+<<<<<<< HEAD
 rust_STEP_TO_PROG =    rust/target/release/$($(1))
 rust2_STEP_TO_PROG =   rust2/target/release/$($(1))
+=======
+rust_STEP_TO_PROG =    rust/$($(1))
+>>>>>>> base/master
 scala_STEP_TO_PROG =   scala/target/scala-2.11/classes/$($(1)).class
 scheme_STEP_TO_PROG =  $(scheme_STEP_TO_PROG_$(scheme_MODE))
 skew_STEP_TO_PROG =    skew/$($(1)).js

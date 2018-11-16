@@ -24,7 +24,7 @@ matrix:
     - {env: IMPL=elisp,     services: [docker]}
     - {env: IMPL=elixir,    services: [docker]}
     - {env: IMPL=elm,       services: [docker]}
-    - {env: IMPL=erlang NO_PERF=1, services: [docker]} # perf runs out of memory
+    - {env: IMPL=erlang,    services: [docker]} # perf runs out of memory
     - {env: IMPL=es6,       services: [docker]}
     - {env: IMPL=factor,    services: [docker]}
     - {env: IMPL=fantom,    services: [docker]}
@@ -32,7 +32,7 @@ matrix:
     - {env: IMPL=fsharp,    services: [docker]}
     - {env: IMPL=go,        services: [docker]}
     - {env: IMPL=groovy,    services: [docker]}
-    - {env: IMPL=gst,       services: [docker]}
+    - {env: IMPL=gnu-smalltalk, services: [docker]}
     - {env: IMPL=guile,     services: [docker]}
     - {env: IMPL=haskell,   services: [docker]}
     - {env: IMPL=haxe haxe_MODE=neko,   services: [docker]}
@@ -49,7 +49,7 @@ matrix:
     - {env: IMPL=logo,      services: [docker]}
     - {env: IMPL=lua,       services: [docker]}
     - {env: IMPL=make,      services: [docker]}
-    - {env: IMPL=mal BUILD_IMPL=js NO_PERF=1, services: [docker]}
+    - {env: IMPL=mal BUILD_IMPL=js, services: [docker]}
     - {env: IMPL=matlab, services: [docker]} # Uses Octave
     - {env: IMPL=miniMAL,   services: [docker]}
     - {env: IMPL=nasm,      services: [docker]}
@@ -61,7 +61,7 @@ matrix:
     - {env: IMPL=perl,      services: [docker]}
     - {env: IMPL=perl6,     services: [docker]}
     - {env: IMPL=php,       services: [docker]}
-    - {env: IMPL=pil,       services: [docker]}
+    - {env: IMPL=picolisp,  services: [docker]}
     - {env: IMPL=plpgsql,   services: [docker]}
 #    - {env: IMPL=plsql,     services: [docker]}
     - {env: IMPL=ps,        services: [docker]}

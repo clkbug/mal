@@ -259,7 +259,7 @@ cd chuck
 
 The implementation has been tested with SBCL, CCL, CMUCL, GNU CLISP, ECL and
 Allegro CL on Ubuntu 16.04 and Ubuntu 12.04, see
-the [README][common-lisp/README.org] for more details. Provided you have the
+the [README](common-lisp/README.org) for more details. Provided you have the
 dependencies mentioned installed, do the following to run the implementation
 
 ```
@@ -290,7 +290,7 @@ coffee ./stepX_YYY
 
 *The Crystal implementation of mal was created by [Linda_pp](https://github.com/rhysd)*
 
-The Crystal implementation of mal has been tested with Crystal 0.18.4.
+The Crystal implementation of mal has been tested with Crystal 0.26.1.
 
 ```
 cd crystal
@@ -480,7 +480,7 @@ guile -L ./ stepX_YYY.scm
 The Smalltalk implementation of mal has been tested with GNU Smalltalk 3.2.91.
 
 ```
-cd gst
+cd gnu-smalltalk
 ./run
 ```
 
@@ -761,7 +761,7 @@ The Picolisp implementation requires libreadline and Picolisp 3.1.11
 or later.
 
 ```
-cd pil
+cd picolisp
 ./run
 ```
 
@@ -890,6 +890,8 @@ tool (cargo) to build.
 cd rust
 cargo run --release --bin stepX_YYY
 ```
+
+There is also a separate implementation in [Rust by Tim Morgan](https://github.com/seven1m/mal-rust).
 
 ### Scala ###
 
@@ -1217,6 +1219,10 @@ make "docker-build^IMPL"
   out. These dependencies are download to dot-files in the /mal
   directory so they will persist between runs.
 
+## Projects using mal
+
+ * [malc](https://github.com/dubek/malc) - Mal (Make A Lisp) compiler. Compiles a Mal program to LLVM assembly language, then binary.
+ * [frock](https://github.com/chr15m/frock) - Clojure-flavoured PHP. Uses mal/php to run programs.
 
 ## License
 
